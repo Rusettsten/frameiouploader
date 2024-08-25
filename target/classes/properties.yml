@@ -1,0 +1,15 @@
+#Configuration for MUNY FrameIo Uploader
+apiToken: ""
+teamName: ""
+projectName: ""
+realtimeUpload: false
+filetype: ""
+uploadThreadCount: 10
+liveChunkSizeKb: 20000
+liveFinalTimeoutMs: 10000
+httpRequestTimeoutMs: 60000
+uploadRetryCount: 10
+debugOutput: false
+folderMappings:
+    - localFolderLocation: ""
+      remoteFolderName: ""
