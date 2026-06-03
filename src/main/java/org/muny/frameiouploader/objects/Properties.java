@@ -15,6 +15,7 @@ public class Properties {
 	private int uploadThreadCount;
 	private int liveChunkSizeKb;
 	private int liveFinalTimeoutMs;
+	private int liveUploadPollIntervalMs;
 	private int httpRequestTimeoutMs;
 	private int uploadRetryCount;
 	private boolean debugOutput;
@@ -54,7 +55,11 @@ public class Properties {
 	public int getLiveFinalTimeoutMs() {
 		return liveFinalTimeoutMs;
 	}
-	
+
+	public int getLiveUploadPollIntervalMs() {
+		return liveUploadPollIntervalMs;
+	}
+
 	public int getHttpRequestTimeoutMs() {
 		return httpRequestTimeoutMs;
 	}
@@ -106,7 +111,11 @@ public class Properties {
 	public void setLiveFinalTimeoutMs(int liveFinalTimeoutMs) {
 		this.liveFinalTimeoutMs = liveFinalTimeoutMs;
 	}
-	
+
+	public void setLiveUploadPollIntervalMs(int liveUploadPollIntervalMs) {
+		this.liveUploadPollIntervalMs = liveUploadPollIntervalMs;
+	}
+
 	public void setHttpRequestTimeoutMs(int httpRequestTimeoutMs) {
 		this.httpRequestTimeoutMs = httpRequestTimeoutMs;
 	}

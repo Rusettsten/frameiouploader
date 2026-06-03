@@ -3,7 +3,6 @@ package org.muny.frameiouploader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 public class LimitedInputStream extends FileInputStream {
   private final int limit;

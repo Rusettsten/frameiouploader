@@ -7,6 +7,7 @@ filetype: ""
 uploadThreadCount: 10
 liveChunkSizeKb: 20000
 liveFinalTimeoutMs: 10000
+liveUploadPollIntervalMs: 500
 httpRequestTimeoutMs: 60000
 uploadRetryCount: 10
 debugOutput: false

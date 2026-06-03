@@ -15,28 +15,29 @@ public class Team implements Refreshable {
 	 * VARIABLES
 	 */
 	private ApiUtility api;
+	private String accountId;
 	private String teamNameLookup;
 	private String teamId;
 	private String name;
-	
+
 	/*
 	 * METHODS - GETTERS AND SETTERS
 	 */
 	public String getTeamId() {
 		return teamId;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
-	
+
+
 	/*
 	 * METHODS - REFRESH
 	 */
 	public void refreshData() {
 		try {
-			JsonElement teamsRequest = api.sendApiRequest("https://api.frame.io/v2/teams");
+			JsonElement teamsRequest = api.sendApiRequest("https://api.frame.io/v4/accounts/" + accountId + "/workspaces");
 			JsonArray teams = teamsRequest.getAsJsonArray();
 			
 			//find team matching team name lookup
@@ -73,8 +74,9 @@ public class Team implements Refreshable {
 	/*
 	 * CONSTRUCTOR
 	 */
-	public Team(ApiUtility api, String teamNameLookup) {
+	public Team(ApiUtility api, String accountId, String teamNameLookup) {
 		this.api = api;
+		this.accountId = accountId;
 		this.teamNameLookup = teamNameLookup;
 		refreshData();
 	}

@@ -3,6 +3,7 @@ package org.muny.frameiouploader.observation;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.muny.frameiouploader.FrameIoUploader;
+import org.muny.frameiouploader.LiveUploadProcessor;
 import org.muny.frameiouploader.UploadProcessor;
 import org.muny.frameiouploader.api.ApiUtility;
 import org.muny.frameiouploader.api.objects.RemoteFolder;
@@ -50,14 +51,62 @@ public class FileWatcher implements Runnable {
 		
 		if(realtime) {
 			realtimeUploadLoop();
-		}else if (realtime) {
+		} else {
 			classicUploadLoop();
 		}
 		
 	}
 	
 	private void realtimeUploadLoop() {
-		
+		ConsoleHelper.outputInformation("Starting realtime FileWatcher on " + localFile.getFileName());
+
+		LiveUploadProcessor lup = new LiveUploadProcessor(api, localFile, remoteFolder.getAssetId());
+		if (!lup.createLiveAsset()) {
+			ConsoleHelper.outputError("Aborting realtime upload for " + localFile.getFileName());
+			return;
+		}
+
+		long lastUploadedByte = 0;
+		long lastSizeChangeNanotime = System.nanoTime();
+		long lastKnownSize = localFile.getFileSize();
+		long chunkSizeBytes = FrameIoUploader.currentProperties.getLiveChunkSizeKb() * 1024L;
+		long pollIntervalMs = FrameIoUploader.currentProperties.getLiveUploadPollIntervalMs();
+		long finalTimeoutNs = 1000000L * (long) FrameIoUploader.currentProperties.getLiveFinalTimeoutMs();
+
+		while (keepAlive) {
+			try {
+				Thread.sleep(pollIntervalMs);
+			} catch (InterruptedException ex) {
+				break;
+			}
+
+			long currentSize = localFile.getFileSize();
+
+			if (currentSize != lastKnownSize) {
+				lastKnownSize = currentSize;
+				lastSizeChangeNanotime = System.nanoTime();
+			}
+
+			while ((currentSize - lastUploadedByte) >= chunkSizeBytes) {
+				boolean success = lup.uploadChunk(lastUploadedByte, chunkSizeBytes);
+				if (!success) {
+					ConsoleHelper.outputError("Chunk upload failed. Stopping realtime upload for " + localFile.getFileName());
+					return;
+				}
+				lastUploadedByte += chunkSizeBytes;
+			}
+
+			boolean fileStagnant = (System.nanoTime() - lastSizeChangeNanotime) >= finalTimeoutNs;
+			if (fileStagnant) {
+				long remaining = currentSize - lastUploadedByte;
+				if (remaining > 0) {
+					lup.uploadChunk(lastUploadedByte, remaining);
+				}
+				break;
+			}
+		}
+
+		ConsoleHelper.outputInformation("Stopping realtime FileWatcher on " + localFile.getFileName());
 	}
 	
 	private void classicUploadLoop() {

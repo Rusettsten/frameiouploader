@@ -16,6 +16,7 @@ public class RemoteFolder {
 	 * VARIABLES
 	 */
 	private ApiUtility api;
+	private String accountId;
 	private String name;
 	private String assetId;
 	
@@ -35,26 +36,31 @@ public class RemoteFolder {
 	 * METHODS - FIND CHILD FILES
 	 */
 	public ArrayList<RemoteFile> retrieveChildFiles() {
-		
+
 		int filesFound = 0;
 		ArrayList<RemoteFile> remoteFiles = new ArrayList<RemoteFile>();
-		
+
 		try {
-			JsonElement assetsRequest = api.sendApiRequest("https://api.frame.io/v2/assets/" + assetId + "/children");
+			JsonElement assetsRequest = api.sendApiRequest("https://api.frame.io/v4/accounts/" + accountId + "/folders/" + assetId + "/children");
 			JsonArray assets = assetsRequest.getAsJsonArray();
 			Iterator<JsonElement> assetsIterator = assets.iterator();
-			
+
 			while(assetsIterator.hasNext()) {
 				JsonElement workingElement = assetsIterator.next();
 				JsonObject workingObj = workingElement.getAsJsonObject();
-				
+
 				String type = workingObj.get("type").toString().replaceAll("\"", "");
 				String assetName = workingObj.get("name").toString().replaceAll("\"", "");
-				String assetId = workingObj.get("id").toString().replaceAll("\"", "");
-				int frameCount = Integer.parseInt(workingObj.get("frames").toString().replaceAll("\"", ""));
-				
+				String childAssetId = workingObj.get("id").toString().replaceAll("\"", "");
+
+				JsonElement framesEl = workingObj.get("frame_count");
+				if (framesEl == null || framesEl.isJsonNull()) {
+					framesEl = workingObj.get("frames");
+				}
+				int frameCount = (framesEl != null && !framesEl.isJsonNull()) ? framesEl.getAsInt() : 0;
+
 				if(type.equals("file")) {
-					RemoteFile workingFile = new RemoteFile(assetName, assetId, frameCount);
+					RemoteFile workingFile = new RemoteFile(assetName, childAssetId, frameCount);
 					remoteFiles.add(workingFile);
 					filesFound++;
 				}
@@ -81,8 +87,9 @@ public class RemoteFolder {
 	/*
 	 * CONSTRUCTOR
 	 */
-	public RemoteFolder(ApiUtility api, String name, String assetId) {
+	public RemoteFolder(ApiUtility api, String accountId, String name, String assetId) {
 		this.api = api;
+		this.accountId = accountId;
 		this.name = name;
 		this.assetId = assetId;
 	}

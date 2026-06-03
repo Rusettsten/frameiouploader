@@ -1,7 +1,6 @@
 package org.muny.frameiouploader;
 
 import java.io.File;
-import java.io.File.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,14 +18,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.io.FileUtils;
-import org.jcodec.common.DemuxerTrack;
-import org.jcodec.common.Format;
-import org.jcodec.common.JCodecUtil;
-import org.jcodec.common.io.FileChannelWrapper;
-import org.jcodec.common.io.NIOUtils;
-import org.jcodec.containers.mkv.demuxer.MKVDemuxer;
-import org.jcodec.containers.mp4.demuxer.MP4Demuxer;
-import org.jcodec.containers.mp4.demuxer.MP4DemuxerTrack;
 import org.muny.frameiouploader.api.ApiUtility;
 import org.muny.frameiouploader.api.objects.RemoteFolder;
 import org.muny.frameiouploader.api.objects.Project;
@@ -41,7 +32,6 @@ import org.muny.frameiouploader.observation.FileWatcher;
 import org.muny.frameiouploader.observation.FolderWatcher;
 import org.muny.frameiouploader.utility.ConsoleHelper;
 import org.muny.frameiouploader.utility.FileHelper;
-import org.opencv.core.Core;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.Videoio;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -64,7 +54,7 @@ public class FrameIoUploader {
 	/*
 	 * VARIABLES
 	 */
-	public static String version = "1.0.0";
+	public static String version = "2.0.0";
 	public static String authors = "Benji Arrigo";
 	public static Properties currentProperties;
 	
@@ -73,6 +63,7 @@ public class FrameIoUploader {
 	//to be filled in as the program runs
 	public static ApiUtility api;
 	public static User currentUser;
+	public static String accountId;
 	public static Team currentTeam;
 	public static Project currentProject;
 	public static ExecutorService threadExecutor = Executors.newCachedThreadPool();
@@ -93,8 +84,9 @@ public class FrameIoUploader {
 		loadPropertiesFile(args);
 		api = new ApiUtility(currentProperties.getApiToken());
 		currentUser = new User(api);
-		currentTeam = new Team(api, currentProperties.getTeamName());
-		currentProject = new Project(api, currentTeam.getTeamId(), currentProperties.getProjectName());
+		accountId = currentUser.getAccountId();
+		currentTeam = new Team(api, accountId, currentProperties.getTeamName());
+		currentProject = new Project(api, accountId, currentProperties.getProjectName());
 		uploadThreadExecutor = Executors.newFixedThreadPool(FrameIoUploader.currentProperties.getUploadThreadCount());
 		ArrayList<RemoteFolder> remoteFolders = currentProject.getFolders();
 		
@@ -288,6 +280,7 @@ public class FrameIoUploader {
 		ConsoleHelper.outputInformation("\t upload thread count: " + currentProperties.getUploadThreadCount());
 		ConsoleHelper.outputInformation("\t live chunk size (kb): " + currentProperties.getLiveChunkSizeKb());
 		ConsoleHelper.outputInformation("\t live final timeout (ms): " + currentProperties.getLiveFinalTimeoutMs());
+		ConsoleHelper.outputInformation("\t live upload poll interval (ms): " + currentProperties.getLiveUploadPollIntervalMs());
 		ConsoleHelper.outputInformation("\t http request timeout (ms): " + currentProperties.getHttpRequestTimeoutMs());
 		ConsoleHelper.outputInformation("\t upload retry count: " + currentProperties.getUploadRetryCount());
 		ConsoleHelper.outputInformation("\t debug output: " +  currentProperties.getDebugOutput());

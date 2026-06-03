@@ -34,17 +34,15 @@ public class UploadProcessor {
 	public void createAsset() {
 		JsonObject assetInfo = new JsonObject();
 		assetInfo.addProperty("name", fileToUpload.getFileName());
-		assetInfo.addProperty("type", "file");
 		assetInfo.addProperty("filetype", FrameIoUploader.currentProperties.getFiletype());
-		assetInfo.addProperty("is_realtime_upload", false);
 		assetInfo.addProperty("filesize", fileToUpload.getFileSize());
-		
-		String requestUrl = "https://api.frame.io/v2/assets/" + parentFolderId + "/children";
+		assetInfo.addProperty("parent_id", parentFolderId);
+
+		String requestUrl = "https://api.frame.io/v4/accounts/" + FrameIoUploader.accountId + "/files";
 		String body = assetInfo.toString();
 		JsonElement createAssetRequest = api.sendApiRequest(requestUrl, body);
 		JsonObject createdAsset = createAssetRequest.getAsJsonObject();
-		
-		//get id and upload urls
+
 		assetId = createdAsset.get("id").toString().replaceAll("\"", "");
 		JsonArray uploadUrlsJson = createdAsset.getAsJsonArray("upload_urls");
 		for(int x = 0; x < uploadUrlsJson.size(); x++) {
@@ -95,7 +93,6 @@ public class UploadProcessor {
 		this.fileToUpload = localFile;
 		this.api = api;
 		this.parentFolderId = parentFolderId;
-		FrameIoUploader.currentUser.getUploadUrl();
 	}
 	
 
